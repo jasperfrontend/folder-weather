@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Folder Weather — Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <header>
+    <h1>🌤️ Folder Weather</h1>
+    <p class="sub">Turn a bookmark-toolbar folder into a live weather readout.</p>
+  </header>
+
+  <main>
+    <!-- Managed folders ----------------------------------------------------->
+    <section>
+      <h2>Managed folders</h2>
+      <p class="hint">Folders this extension is keeping up to date. You can also
+        just name a toolbar folder <code>[w Rotterdam]</code> as a quick-add.</p>
+      <ul id="managed" class="managed"></ul>
+      <p id="managed-empty" class="empty" hidden>Nothing managed yet — attach a folder below.</p>
+    </section>
+
+    <!-- Editor (attach / edit) ---------------------------------------------->
+    <section>
+      <h2 id="editor-title">Attach a folder</h2>
+      <input type="hidden" id="folder-id">
+
+      <div class="field" id="picker-field">
+        <label for="folder-picker">Bookmark folder</label>
+        <select id="folder-picker"></select>
+      </div>
+
+      <div class="field">
+        <label for="city">City</label>
+        <div class="row">
+          <input type="text" id="city" placeholder="Rotterdam" autocomplete="off">
+          <button type="button" id="lookup" class="ghost">Look up</button>
+        </div>
+        <p class="resolved" id="resolved"></p>
+      </div>
+
+      <div class="field">
+        <label for="template">Row template <span class="muted">(blank = use global default)</span></label>
+        <input type="text" id="template" placeholder="(global default)" autocomplete="off">
+        <p class="hint" id="tokens"></p>
+      </div>
+
+      <div class="field">
+        <label for="title-template">Folder title <span class="muted">(blank = use global default)</span></label>
+        <div class="row">
+          <input type="text" id="title-template" placeholder="(global default)" autocomplete="off">
+          <select id="title-preset" class="preset" title="Insert a preset">
+            <option value="">Presets…</option>
+          </select>
+        </div>
+        <p class="hint">e.g. <code>{city} {temp}°</code> makes the folder itself read “Rotterdam 24°”. Leave the global default blank to keep titles as just the city.</p>
+      </div>
+
+      <div class="field">
+        <button type="button" id="preview-btn" class="ghost">Preview</button>
+        <div class="preview" id="preview"></div>
+      </div>
+
+      <div class="actions">
+        <button type="button" id="save" class="primary">Save</button>
+        <button type="button" id="cancel" class="ghost" hidden>Cancel edit</button>
+        <span class="status" id="editor-status"></span>
+      </div>
+    </section>
+
+    <!-- Global settings ----------------------------------------------------->
+    <section>
+      <h2>Global settings</h2>
+
+      <div class="field">
+        <label for="default-template">Default row template</label>
+        <input type="text" id="default-template" autocomplete="off">
+        <p class="hint">Used by city-only folders (e.g. <code>[w Dinteloord]</code>) and as the editor default.</p>
+      </div>
+
+      <div class="field">
+        <label for="default-title">Default folder title <span class="muted">(blank = title stays just the city)</span></label>
+        <div class="row">
+          <input type="text" id="default-title" placeholder="(just the city — off)" autocomplete="off">
+          <select id="default-title-preset" class="preset" title="Insert a preset">
+            <option value="">Presets…</option>
+          </select>
+        </div>
+        <p class="hint">Set e.g. <code>{city} {temp}°</code> to turn every managed folder's own name into a live readout. Applies to all folders that don't override it below.</p>
+      </div>
+
+      <div class="grid">
+        <div class="field">
+          <label for="interval">Update every (minutes)</label>
+          <input type="number" id="interval" min="1" max="1440">
+        </div>
+        <div class="field">
+          <label for="dry-text">"No rain" text</label>
+          <input type="text" id="dry-text">
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="field">
+          <label for="u-temp">Temperature</label>
+          <select id="u-temp">
+            <option value="celsius">°C</option>
+            <option value="fahrenheit">°F</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="u-wind">Wind</label>
+          <select id="u-wind">
+            <option value="kmh">km/h</option>
+            <option value="ms">m/s</option>
+            <option value="mph">mph</option>
+            <option value="kn">knots</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="u-precip">Precipitation</label>
+          <select id="u-precip">
+            <option value="mm">mm</option>
+            <option value="inch">inch</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="button" id="save-settings" class="primary">Save settings</button>
+        <span class="status" id="settings-status"></span>
+      </div>
+    </section>
+  </main>
+
+  <script src="engine.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

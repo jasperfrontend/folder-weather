@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Folder Weather",
+  "version": "0.1",
+  "description": "Turns a bookmark folder into a live weather readout, one row per data point.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "folder-weather@jasperdiscovers"
+    }
+  },
+  "permissions": ["bookmarks", "alarms", "storage"],
+  "host_permissions": [
+    "https://api.open-meteo.com/*",
+    "https://geocoding-api.open-meteo.com/*"
+  ],
+  "background": {
+    "scripts": ["engine.js", "background.js"]
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  }
+}
