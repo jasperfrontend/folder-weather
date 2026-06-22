@@ -59,7 +59,7 @@ async function folderPath(id) {
 async function buildPicker() {
   const tree = await browser.bookmarks.getTree();
   const picker = $("folder-picker");
-  picker.innerHTML = "";
+  picker.replaceChildren();
   (function walk(nodes, depth) {
     for (const n of nodes) {
       if (n.url) continue;                 // folders only
@@ -82,7 +82,7 @@ async function loadManaged() {
     .map(k => k.slice("fw_config_".length));
 
   const list = $("managed");
-  list.innerHTML = "";
+  list.replaceChildren();
   $("managed-empty").hidden = ids.length > 0;
 
   for (const id of ids) {
@@ -94,14 +94,22 @@ async function loadManaged() {
 
     const meta = document.createElement("div");
     meta.className = "meta";
-    const dot = status
-      ? `<span class="dot ${status.ok ? "ok" : "err"}" title="${status.ok ? "OK" : (status.error || "error")}">${status.ok ? "●" : "▲"}</span> `
-      : "";
-    meta.innerHTML =
-      `<div class="name">${dot}${escapeHtml(cfg.city)}</div>` +
-      `<div class="path">${path === null ? "⚠ folder missing" : escapeHtml(path)}</div>` +
-      `<div class="tmpl">${cfg.template ? escapeHtml(cfg.template) : "(global default)"}</div>` +
-      (status && !status.ok && status.error ? `<div class="path" style="color:var(--err)">${escapeHtml(status.error)}</div>` : "");
+
+    const name = el("div", "name");
+    if (status) {
+      const dot = el("span", "dot " + (status.ok ? "ok" : "err"), status.ok ? "●" : "▲");
+      dot.title = status.ok ? "OK" : (status.error || "error");
+      name.append(dot, " ");
+    }
+    name.append(cfg.city);
+    meta.appendChild(name);
+
+    meta.appendChild(el("div", "path", path === null ? "⚠ folder missing" : path));
+    meta.appendChild(el("div", "tmpl", cfg.template ? cfg.template : "(global default)"));
+    if (status && !status.ok && status.error) {
+      const err = el("div", "path err-text", status.error);
+      meta.appendChild(err);
+    }
     li.appendChild(meta);
 
     const btns = document.createElement("div");
@@ -132,9 +140,12 @@ function mkBtn(label, cls, onClick) {
   return b;
 }
 
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, c =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+// create an element with a class and text content (no innerHTML anywhere)
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
 }
 
 // ---- editor (attach + edit share one form) ----------------
@@ -147,7 +158,7 @@ function setEditMode(editing, city, template, titleTemplate) {
   $("title-template").value = titleTemplate || "";
   $("resolved").textContent = "";
   $("resolved").className = "resolved";
-  $("preview").innerHTML = "";
+  $("preview").replaceChildren();
 }
 
 function editFolder(id, cfg) {
@@ -176,26 +187,18 @@ async function doLookup() {
 async function doPreview() {
   const city = $("city").value.trim();
   const box = $("preview");
-  if (!city) { box.innerHTML = ""; return; }
-  box.innerHTML = `<div class="prow">Loading…</div>`;
+  if (!city) { box.replaceChildren(); return; }
+  box.replaceChildren(el("div", "prow", "Loading…"));
   const res = await previewRows(city, $("template").value, $("title-template").value);
-  if (res.error) { box.innerHTML = `<div class="prow perr">${escapeHtml(res.error)}</div>`; return; }
-  box.innerHTML = "";
+  if (res.error) { box.replaceChildren(el("div", "prow perr", res.error)); return; }
+  box.replaceChildren();
   if (res.title) {
-    const t = document.createElement("div");
-    t.className = "ptitle";
-    t.textContent = "📁 " + res.title;
-    box.appendChild(t);
+    box.appendChild(el("div", "ptitle", "📁 " + res.title));
   }
   res.rows.forEach((row, i) => {
-    const d = document.createElement("div");
-    d.className = "prow";
-    d.textContent = row;
-    box.appendChild(d);
+    box.appendChild(el("div", "prow", row));
     if (i < res.rows.length - 1) {
-      const s = document.createElement("div");
-      s.className = "psep";
-      box.appendChild(s);
+      box.appendChild(el("div", "psep"));
     }
   });
 }

@@ -149,6 +149,7 @@ button.danger:hover { border-color: var(--err); color: var(--err); }
 .managed .name { font-weight: 600; }
 .managed .path { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .managed .tmpl { color: var(--muted); font-size: 12px; font-family: ui-monospace, monospace; }
+.managed .err-text { color: var(--err); }
 .managed .dot { font-size: 11px; }
 .managed .dot.ok { color: var(--ok); }
 .managed .dot.err { color: var(--err); }
