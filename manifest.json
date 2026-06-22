@@ -1,13 +1,13 @@
 {
   "manifest_version": 3,
   "name": "Folder Weather",
-  "version": "0.1",
+  "version": "0.1.1",
   "description": "Turns a bookmark folder into a live weather readout, one row per data point.",
   "author": "jasperfrontend",
   "browser_specific_settings": {
     "gecko": {
       "id": "folder-weather@jasperdiscovers",
-      "strict_min_version": "115.0",
+      "strict_min_version": "140.0",
       "data_collection_permissions": {
         "required": ["none"]
       }
