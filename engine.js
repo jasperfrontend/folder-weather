@@ -194,13 +194,37 @@ async function previewRows(city, template, titleTemplate) {
   return { rows, title, geo };
 }
 
+// the Google weather-search URL every generated row links to; also used as a
+// reliable fingerprint for "this row is ours" during cleanup
+function weatherLink(city) {
+  return "https://www.google.com/search?q=" +
+    encodeURIComponent("weather " + city);
+}
+
 // --- child bookmark management ------------------------------
-// only ever touch children we created ourselves, tracked by id in storage
-async function clearGenerated(folderId) {
+// Remove the rows/separators we created. We trust the tracked id list, but we
+// also self-heal: any child carrying our weather link is unmistakably ours
+// (clears orphans left by older races). Separators are only swept when the
+// whole folder is ours, so a user-attached folder keeps its own separators.
+async function clearGenerated(folderId, link) {
   const key = "fw_children_" + folderId;
-  const ids = (await browser.storage.local.get(key))[key] || [];
-  for (const id of ids) {
-    try { await browser.bookmarks.remove(id); } catch (e) { /* already gone */ }
+  const tracked = new Set((await browser.storage.local.get(key))[key] || []);
+
+  let children = [];
+  try { children = await browser.bookmarks.getChildren(folderId); }
+  catch (e) { children = []; } // folder gone
+
+  const allOurs = children.length > 0 && children.every(c =>
+    c.type === "separator" || (link && c.url === link));
+
+  for (const c of children) {
+    const ours =
+      tracked.has(c.id) ||
+      (link && c.url === link) ||
+      (c.type === "separator" && allOurs);
+    if (ours) {
+      try { await browser.bookmarks.remove(c.id); } catch (e) { /* gone */ }
+    }
   }
   await browser.storage.local.remove(key);
 }
@@ -217,9 +241,7 @@ async function renderInto(folderId, config) {
     const tmpl = config.template || settings.defaultTemplate;
     const segments = tmpl.split("|").map(s => render(s.trim(), ctx)).filter(Boolean);
 
-    const link =
-      "https://www.google.com/search?q=" +
-      encodeURIComponent("weather " + config.city);
+    const link = weatherLink(config.city);
 
     // optional live folder-title readout (e.g. "Rotterdam 24°"); blank = leave it
     const titleTmpl = resolveTitleTemplate(config, settings);
@@ -228,7 +250,7 @@ async function renderInto(folderId, config) {
       if (title) { try { await browser.bookmarks.update(folderId, { title }); } catch (e) { /* gone */ } }
     }
 
-    await clearGenerated(folderId);
+    await clearGenerated(folderId, link);
 
     const ids = [];
     let idx = 0;

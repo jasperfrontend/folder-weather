@@ -1,7 +1,15 @@
-// options.js — UI controller. Reuses the engine (engine.js) directly:
-// getSettings, saveSettings, previewRows, geocode, renderInto, clearGenerated.
+// options.js — UI controller. Reads/writes settings + config and runs the
+// read-only live preview directly (getSettings, saveSettings, previewRows,
+// geocode). It never writes weather rows itself: all bookmark rendering is
+// delegated to the background via messages, so renders stay serialized in one
+// place and can never overlap (which is what caused duplicated rows).
 
 const $ = (id) => document.getElementById(id);
+
+// ask the background to do a bookmark-mutating job and wait for it to finish
+function bg(type, id) {
+  return browser.runtime.sendMessage({ type, id });
+}
 
 const TOKENS =
   "Now: {emoji} {temp} {feels} {wind} {windarrow} {rain} {humidity} {city}  ·  " +
@@ -117,12 +125,11 @@ async function loadManaged() {
     btns.appendChild(mkBtn("Edit", "tiny ghost", () => editFolder(id, cfg)));
     btns.appendChild(mkBtn("Refresh", "tiny ghost", async (b) => {
       b.disabled = true; b.textContent = "…";
-      await renderInto(id, cfg);
+      await bg("render", id);
       await loadManaged();
     }));
     btns.appendChild(mkBtn("Detach", "tiny ghost danger", async () => {
-      await clearGenerated(id);
-      await browser.storage.local.remove(["fw_config_" + id, "fw_status_" + id]);
+      await bg("detach", id);
       await loadManaged();
     }));
     li.appendChild(btns);
@@ -219,7 +226,7 @@ async function doSave() {
 
   const config = { city, template, titleTemplate };
   await browser.storage.local.set({ ["fw_config_" + id]: config });
-  await renderInto(id, config);
+  await bg("render", id);
   await loadManaged();
   resetEditor();
   flash(st, "Saved.", true);
