@@ -207,7 +207,7 @@ function weatherLink(city) {
 // (clears orphans left by older races). Separators are only swept when the
 // whole folder is ours, so a user-attached folder keeps its own separators.
 async function clearGenerated(folderId, link) {
-  const key = "fw_children_" + folderId;
+  const key = "fw_bookmarks_" + folderId;
   const tracked = new Set((await browser.storage.local.get(key))[key] || []);
 
   let children = [];
@@ -266,7 +266,7 @@ async function renderInto(folderId, config) {
         ids.push(sep.id);
       }
     }
-    await browser.storage.local.set({ ["fw_children_" + folderId]: ids });
+    await browser.storage.local.set({ ["fw_bookmarks_" + folderId]: ids });
     await setStatus(folderId, true, null);
   } catch (e) {
     await setStatus(folderId, false, String((e && e.message) || e));

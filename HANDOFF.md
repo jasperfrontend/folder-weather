@@ -50,7 +50,7 @@ The full loop runs once on load and every `updateMinutes` (default 15, from sett
 |--------------------------|-----------------------------------------------|----------------------------------------------------------------------------|
 | `fw_settings`            | `{ defaultTemplate, titleTemplate, dryText, updateMinutes, units }` | global settings; written by the options page. `units = { temperature, windSpeed, precipitation }` (Open-Meteo values). `titleTemplate` blank = leave folder titles as just the city. Changing it reschedules the alarm + refreshes. |
 | `fw_config_<folderId>`   | `{ city, template, titleTemplate }`           | per-folder config. `template: null` = inherit `defaultTemplate`; `titleTemplate: null` = inherit the global `titleTemplate`; both resolved at render time |
-| `fw_children_<folderId>` | `[ bookmarkId, ... ]`                         | rows + separators the extension created; used to clean up before re-render |
+| `fw_bookmarks_<folderId>`| `[ bookmarkId, ... ]`                         | rows + separators the extension created; used to clean up before re-render (was `fw_children_*` before v0.1.3; `migrateKeys()` carries old entries over) |
 | `fw_status_<folderId>`   | `{ ok, error, at }`                           | last render outcome, surfaced in the manage list                           |
 | `fw_geo_<cityLower>`     | `{ lat, lon, name, admin1, country }`         | geocode cache, keyed by lowercased city (enriched with place name)         |
 

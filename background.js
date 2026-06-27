@@ -80,6 +80,23 @@ async function detach(id) {
   await browser.storage.local.remove(["fw_config_" + id, "fw_status_" + id]);
 }
 
+// --- one-time storage migration -----------------------------
+// The per-folder tracking key was renamed fw_children_* -> fw_bookmarks_*.
+// Carry any old entries over and drop the stale keys. Idempotent.
+async function migrateKeys() {
+  const all = await browser.storage.local.get(null);
+  const writes = {};
+  const removes = [];
+  for (const k of Object.keys(all)) {
+    if (!k.startsWith("fw_children_")) continue;
+    const nk = "fw_bookmarks_" + k.slice("fw_children_".length);
+    if (!(nk in all)) writes[nk] = all[k];
+    removes.push(k);
+  }
+  if (Object.keys(writes).length) await browser.storage.local.set(writes);
+  if (removes.length) await browser.storage.local.remove(removes);
+}
+
 // --- full pass: onboard, then refresh everything we remember ----------
 async function fullUpdate() {
   await onboard();
@@ -153,6 +170,6 @@ browser.bookmarks.onRemoved.addListener((id) => {
 // Listeners above are registered synchronously on every event-page wake.
 // The actual initial render only runs on install/update/browser-start, not on
 // every wake, so a wake can never race a user-triggered render.
-browser.runtime.onInstalled.addListener(() => { scheduleAlarm(); enqueue(fullUpdate); });
-browser.runtime.onStartup.addListener(() => { scheduleAlarm(); enqueue(fullUpdate); });
+browser.runtime.onInstalled.addListener(() => { scheduleAlarm(); enqueue(migrateKeys); enqueue(fullUpdate); });
+browser.runtime.onStartup.addListener(() => { scheduleAlarm(); enqueue(migrateKeys); enqueue(fullUpdate); });
 scheduleAlarm(); // make sure the alarm exists even on a bare wake

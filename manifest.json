@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Folder Weather",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Turns a bookmark folder into a live weather readout, one row per data point.",
   "author": "jasperfrontend",
   "browser_specific_settings": {
